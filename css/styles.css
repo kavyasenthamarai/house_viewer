@@ -1,50 +1,7 @@
-/* General styles for body and background */
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #9e7aad;
-    overflow: hidden; /* Hide overflow to prevent scrolling */
-    background: url('../images/1092.jpg') no-repeat center center fixed;
-    background-size: cover; /* Cover the entire background */
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    body {
-        background-size: contain; /* Adjust background size for smaller screens */
-    }
-
-    #toggleControls, #toggleSidebar {
-        font-size: 14px; /* Decrease font size for buttons on smaller screens */
-    }
-
-    #sidebar {
-        width: 150px; /* Reduce sidebar width for smaller screens */
-        top: 10px;
-        right: 10px;
-    }
-
-    #sidebar button {
-        font-size: 14px; /* Decrease font size for sidebar buttons on smaller screens */
-        padding: 8px; /* Adjust padding for smaller buttons */
-    }
-}
-
-/* Styles for the container and canvas */
-canvas {
-    display: block;
-}
-
-#container {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-}
-
 /* Styles for toggle buttons and sidebar */
 #toggleControls, #toggleSidebar {
     position: absolute;
-    padding: 12px 24px;
+    padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
     outline: none;
@@ -74,7 +31,7 @@ canvas {
     background-color: #6cba7d;
 }
 
-/* Styles for the sidebar */
+/* Sidebar styles */
 #sidebar {
     position: absolute;
     top: 20px;
@@ -90,7 +47,7 @@ canvas {
 
 #sidebar button {
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     margin: 5px 0;
     font-size: 16px;
     background-color: #ab67b4;
@@ -107,4 +64,15 @@ canvas {
 
 #sidebar button:active {
     transform: scale(0.95);
+}
+
+/* Media query for small screens */
+@media (max-width: 768px) {
+    #toggleControls, #toggleSidebar {
+        display: none;
+    }
+
+    #sidebar {
+        display: block;
+    }
 }
