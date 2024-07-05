@@ -3,38 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js Example with GSAP and dat.GUI</title>
+    <title>Three.js Example with Clickable Points and Camera Movement</title>
     <style>
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background-color: #9e7aad;
             overflow: hidden; /* Hide overflow to prevent scrolling */
+            background: url('1092.jpg') no-repeat center center fixed;
+            background-size: cover; /* Cover the entire background */
         }
         canvas {
             display: block;
         }
         #container {
             position: relative;
+            width: 100vw;
+            height: 100vh;
         }
-        #toggleControls {
+        #toggleControls, #toggleSidebar {
             position: absolute;
-            top: 20px;
-            left: 20px;
             padding: 10px 20px;
             font-size: 16px;
-            background-color: #a8b0b9;
-            color: white;
-            border: none;
-            border-radius: 5px;
             cursor: pointer;
             outline: none;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        #toggleControls {
+            top: 20px;
+            left: 20px;
+            background-color: #a8b0b9;
         }
         #toggleControls:hover {
             background-color: #335a82;
         }
-        #toggleControls:active {
-            transform: scale(0.95);
+        #toggleSidebar {
+            top: 20px;
+            right: 20px;
+            background-color: #28a745;
+        }
+        #toggleSidebar:hover {
+            background-color: #6cba7d;
         }
         #sidebar {
             position: absolute;
@@ -64,25 +76,6 @@
             background-color: #0056b3;
         }
         #sidebar button:active {
-            transform: scale(0.95);
-        }
-        #toggleSidebar {
-            position: absolute;
-            top: 20px;
-            right: 240px;
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            outline: none;
-        }
-        #toggleSidebar:hover {
-            background-color: #218838;
-        }
-        #toggleSidebar:active {
             transform: scale(0.95);
         }
     </style>
@@ -158,6 +151,9 @@
 
             // Initialize GUI controls for the camera
             initGUI();
+
+            // Add points to the scene
+            addClickablePoints();
         }, undefined, function (error) {
             console.error('An error occurred while loading the model:', error);
         });
@@ -200,8 +196,8 @@
             this.textContent = orbitControlsEnabled ? 'Disable Orbit Controls' : 'Enable Orbit Controls';
         });
 
-        // Function to move the camera to a specific position with continuous movement on the right side
-        function moveCamera(position, rotation) {
+        // Function to move the camera to a specific position with a transition
+        function moveCamera(position, rotation, rightMoveDuration = 2) {
             const easeDuration = 2; // Duration in seconds for easing
 
             // Fast initial movement
@@ -209,38 +205,121 @@
                 x: position.x,
                 y: position.y,
                 z: position.z,
-                duration: 0.5, // Fast initial movement duration
+                duration: easeDuration,
                 onUpdate: function () {
                     camera.updateProjectionMatrix();
-                },
-                onComplete: function () {
-                    // Continuous movement to the right side
-                    gsap.to(camera.position, {
-                        x: position.x + 1.5,  // Move right by 5 units
-                        y: position.y,
-                        z: position.z,
-                        duration: 4, // Continuous movement duration
-                        ease: Power1.easeInOut, // Smooth acceleration and deceleration
-                        onUpdate: function () {
-                            camera.updateProjectionMatrix();
-                        }
-                    });
-
-                    gsap.to(camera.rotation, {
-                        x: rotation.x,
-                        y: rotation.y,
-                        z: rotation.z,
-                        duration: 2,
-                        ease: Power1.easeInOut,
-                        onUpdate: function () {
-                            camera.updateProjectionMatrix();
-                        }
-                    });
                 }
+            });
+
+            gsap.to(camera.rotation, {
+                x: rotation.x,
+                y: rotation.y,
+                z: rotation.z,
+                duration: easeDuration,
+                ease: Power1.easeInOut,
+                onUpdate: function () {
+                    camera.updateProjectionMatrix();
+                }
+            });
+
+            // Hide all clickable points during the transition
+            clickablePoints.forEach(point => {
+                point.visible = false;
+            });
+
+            // Show points again after the transition completes
+            gsap.delayedCall(easeDuration, () => {
+                clickablePoints.forEach(point => {
+                    point.visible = true;
+                });
+            });
+
+            // Move camera right after reaching the position
+            gsap.delayedCall(easeDuration + 0.5, () => {
+                const forward = new THREE.Vector3(0, 0, -1);
+                forward.applyQuaternion(camera.quaternion);
+                const rightVector = new THREE.Vector3();
+                rightVector.crossVectors(forward, camera.up);
+
+                gsap.to(camera.position, {
+                    x: camera.position.x + rightVector.x * 5,
+                    y: camera.position.y + rightVector.y * 5,
+                    z: camera.position.z + rightVector.z * 5,
+                    duration: rightMoveDuration,
+                    onUpdate: function () {
+                        camera.updateProjectionMatrix();
+                    }
+                });
             });
         }
 
-        // Buttons for moving the camera to different positions
+        // Array to store clickable points
+        const clickablePoints = [];
+
+        // Function to add clickable points to the scene
+        function addClickablePoints() {
+            const points = [
+                { position: new THREE.Vector3(29, 8.4, -11), label: 'Living Room' },
+                { position: new THREE.Vector3(19, 25, -6), label: 'Rooftop Room' },
+                { position: new THREE.Vector3(6, 10.5, 29), label: 'Balcony' },
+                { position: new THREE.Vector3(35, 4.5, 18), label: 'Front' },
+                { position: new THREE.Vector3(-25, 11, -24), label: 'Back' }
+            ];
+
+            points.forEach(point => {
+                const geometry = new THREE.SphereGeometry(0.8, 16, 16); // Smaller size
+                const material = new THREE.MeshBasicMaterial({ color: 0xfffdd0 }); // Cream white color
+                const sphere = new THREE.Mesh(geometry, material);
+                sphere.position.copy(point.position);
+                scene.add(sphere);
+
+                sphere.userData = { label: point.label, position: point.position };
+                clickablePoints.push(sphere);
+            });
+        }
+
+        // Handle mouse click
+        function onDocumentMouseClick(event) {
+            event.preventDefault();
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, camera);
+
+            const intersects = raycaster.intersectObjects(clickablePoints);
+            if (intersects.length > 0) {
+                const point = intersects[0].object.userData.position;
+                moveCamera(point, { x: 0, y: 0, z: 0 }); // Change rotation as needed
+            }
+        }
+
+        document.addEventListener('click', onDocumentMouseClick, false);
+
+        // Render loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update(); // Update controls
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Adjust canvas size when the window is resized
+        window.addEventListener('resize', function () {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Toggle sidebar visibility
+        let sidebarVisible = false;
+        document.getElementById('toggleSidebar').addEventListener('click', function () {
+            sidebarVisible = !sidebarVisible;
+            document.getElementById('sidebar').style.display = sidebarVisible ? 'block' : 'none';
+        });
+
+        // Event listeners for sidebar buttons
         document.getElementById('livingRoomButton').addEventListener('click', function () {
             moveCamera({ x: 29, y: 8.4, z: -11 }, { x: -2.47, y: 1.1, z: 2.52 });
         });
@@ -260,29 +339,6 @@
         document.getElementById('backButton').addEventListener('click', function () {
             moveCamera({ x: -25, y: 11, z: -24 }, { x: -2.72, y: -0.8, z: -2.84 });
         });
-
-        // Toggle sidebar visibility
-        let sidebarVisible = false;
-        document.getElementById('toggleSidebar').addEventListener('click', function () {
-            sidebarVisible = !sidebarVisible;
-            document.getElementById('sidebar').style.display = sidebarVisible ? 'block' : 'none';
-            this.textContent = sidebarVisible ? 'Hide Sidebar' : 'Show Sidebar';
-        });
-
-        // Resize handling
-        window.addEventListener('resize', function () {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        // Render the scene
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update(); // Update controls
-            renderer.render(scene, camera); // Render scene
-        }
-        animate();
     </script>
 </body>
 </html>
