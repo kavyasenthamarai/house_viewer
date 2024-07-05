@@ -4,8 +4,7 @@ scene.background = new THREE.Color(0x008080); // Set blue-green background color
 
 // Create a camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(36, 6.4, 12);  // Updated default position
-camera.rotation.set(-0.49, 1.21, 0.46);  // Updated default rotation
+setInitialCameraPosition();
 
 // Create a directional light
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -54,7 +53,6 @@ loader.load('models/home1.glb', function (gltf) {
 }, undefined, function (error) {
     console.error('An error occurred while loading the model:', error);
 });
-
 
 // Initialize GUI controls for the camera
 let gui, cameraFolder, cameraPositionFolder, cameraRotationFolder;
@@ -148,6 +146,9 @@ function moveCamera(position, rotation, rightMoveDuration = 2) {
                 camera.updateProjectionMatrix();
             }
         });
+
+        // Hide sidebar and reset the button state after camera moves
+        hideSidebar();
     });
 }
 
@@ -208,33 +209,46 @@ window.addEventListener('resize', function () {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    setInitialCameraPosition(); // Adjust the camera position on resize
 });
+
+// Function to set the initial camera position based on screen width
+function setInitialCameraPosition() {
+    if (window.innerWidth < 768) { // For small screens
+        camera.position.set(60, 20, 30); // Adjust these values as needed
+    } else { // For larger screens
+        camera.position.set(36, 6.4, 12); // Default position
+    }
+}
+
+// Function to hide the sidebar and reset the main button state
+function hideSidebar() {
+    sidebarVisible = false;
+    document.getElementById('sidebar').style.display = 'none';
+    document.getElementById('toggleSidebar').textContent = 'Show Sidebar';
+}
 
 // Toggle sidebar visibility
 let sidebarVisible = false;
 document.getElementById('toggleSidebar').addEventListener('click', function () {
     sidebarVisible = !sidebarVisible;
     document.getElementById('sidebar').style.display = sidebarVisible ? 'block' : 'none';
+    this.textContent = sidebarVisible ? 'Hide Sidebar' : 'Show Sidebar';
 });
 
 // Event listeners for sidebar buttons
 document.getElementById('livingRoomButton').addEventListener('click', function () {
-    moveCamera({ x: 29, y: 8.4, z: -11 }, { x: -2.47, y: 1.1, z: 2.52 });
+    moveCamera(new THREE.Vector3(29, 8.4, -11), { x: 0, y: 0, z: 0 });
 });
-
-document.getElementById('rooftopButton').addEventListener('click', function () {
-    moveCamera({ x: 19, y: 25, z: -6 }, { x: -1.16, y: 0.5, z: 0.91 });
+document.getElementById('rooftopRoomButton').addEventListener('click', function () {
+    moveCamera(new THREE.Vector3(19, 25, -6), { x: 0, y: 0, z: 0 });
 });
-
 document.getElementById('balconyButton').addEventListener('click', function () {
-    moveCamera({ x: 6, y: 10.5, z: 29 }, { x: -0.34, y: 0.2, z: 0.06 });
+    moveCamera(new THREE.Vector3(6, 10.5, 29), { x: 0, y: 0, z: 0 });
 });
-
 document.getElementById('frontButton').addEventListener('click', function () {
-    moveCamera({ x: 35, y: 4.5, z: 18 }, { x: -0.25, y: 1.1, z: 0.22 });
+    moveCamera(new THREE.Vector3(35, 4.5, 18), { x: 0, y: 0, z: 0 });
 });
-
 document.getElementById('backButton').addEventListener('click', function () {
-    moveCamera({ x: -25, y: 11, z: -24 }, { x: -1.52, y: 1.1, z: -2.52 });
+    moveCamera(new THREE.Vector3(-25, 11, -24), { x: 0, y: 0, z: 0 });
 });
-

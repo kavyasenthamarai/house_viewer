@@ -23,7 +23,7 @@
 
 #toggleSidebar {
     top: 20px;
-    right: 20px;
+    left: 20px;
     background-color: #28a745;
 }
 
@@ -35,7 +35,7 @@
 #sidebar {
     position: absolute;
     top: 20px;
-    right: 20px;
+    left: 20px;
     width: 200px;
     background-color: #fff;
     border: 1px solid #ddd;
@@ -69,10 +69,15 @@
 /* Media query for small screens */
 @media (max-width: 768px) {
     #toggleControls, #toggleSidebar {
-        display: none;
+        display: block;
     }
 
     #sidebar {
-        display: block;
+        display: none;
+    }
+
+    /* Hide camera properties GUI on small screens */
+    .gui-controls {
+        display: none !important;
     }
 }
