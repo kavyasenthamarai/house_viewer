@@ -96,6 +96,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/DRACOLoader.js"></script>
     
     <!-- GSAP library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.1/gsap.min.js"></script>
@@ -135,11 +136,14 @@
 
         let model; // Variable to store the loaded model
 
-        // Create a loader for loading the GLB file
+        // Create a loader for loading the GLB file with Draco compression
         const loader = new THREE.GLTFLoader();
+        const dracoLoader = new THREE.DRACOLoader();
+        dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/libs/draco/');
+        loader.setDRACOLoader(dracoLoader);
 
         // Load the GLB file
-        loader.load('luxury_villa2.glb', function (gltf) {
+        loader.load('home1.glb', function (gltf) {
             model = gltf.scene;
             scene.add(model);
 
@@ -157,6 +161,7 @@
         }, undefined, function (error) {
             console.error('An error occurred while loading the model:', error);
         });
+
 
         // Initialize GUI controls for the camera
         let gui, cameraFolder, cameraPositionFolder, cameraRotationFolder;
