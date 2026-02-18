@@ -1,7 +1,10 @@
 # 3D House Viewer (Three.js)
 
 ## An interactive 3D web application built using **HTML, CSS, and JavaScript (Three.js)** that allows users to explore a 3D house model with UI controls and sidebar-based interactions.
-
+## Live Demo
+```
+https://deploy-preview-4--projectshowcaseintrino.netlify.app
+```
 ## Features
 - 3D model rendering using Three.js
 - Supports GLB/GLTF models
